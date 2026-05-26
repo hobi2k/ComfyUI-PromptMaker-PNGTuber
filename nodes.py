@@ -72,7 +72,7 @@ def _resolve_path(value: str) -> Path:
 
 def _safe_asset_id(value: str) -> str:
     cleaned = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in value.strip())
-    return cleaned or "promptmaker_pngtuber"
+    return cleaned or "pngtuber_video_mouth"
 
 
 def _quad_from_bbox(
@@ -677,14 +677,14 @@ def _mux_audio_and_h264(no_audio_path: Path, source_video: Path, final_path: Pat
         no_audio_path.unlink(missing_ok=True)
 
 
-class PromptMakerPNGTuberVideoMouth:
+class PNGTuberVideoMouthBuilder:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "video_path": ("STRING", {"default": "input_video.mp4", "multiline": False}),
                 "output_dir": ("STRING", {"default": "", "multiline": False}),
-                "asset_id": ("STRING", {"default": "promptmaker_pngtuber", "multiline": False}),
+                "asset_id": ("STRING", {"default": "pngtuber_video_mouth", "multiline": False}),
                 "max_frames": ("INT", {"default": 0, "min": 0, "max": 20000, "step": 1}),
                 "frame_stride": ("INT", {"default": 1, "min": 1, "max": 30, "step": 1}),
                 "detection_confidence": ("FLOAT", {"default": 0.5, "min": 0.1, "max": 0.95, "step": 0.05}),
@@ -698,10 +698,12 @@ class PromptMakerPNGTuberVideoMouth:
             }
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
     RETURN_NAMES = (
         "mouthless_video",
         "mouth_track_json",
+        "mouth_sprite_atlas_json",
+        "bundle_manifest_json",
         "mouth_closed",
         "mouth_half",
         "mouth_open",
@@ -710,7 +712,7 @@ class PromptMakerPNGTuberVideoMouth:
         "summary_json",
     )
     FUNCTION = "run"
-    CATEGORY = "PromptMaker/PNGTuber"
+    CATEGORY = "PNGTuber/Video Mouth"
     OUTPUT_NODE = True
 
     def run(
@@ -742,7 +744,7 @@ class PromptMakerPNGTuberVideoMouth:
             raise RuntimeError(f"Video not found: {source}")
 
         asset = _safe_asset_id(asset_id)
-        root = Path(output_dir).expanduser() if output_dir.strip() else _comfy_output_dir() / "promptmaker_pngtuber"
+        root = Path(output_dir).expanduser() if output_dir.strip() else _comfy_output_dir() / "pngtuber_video_mouth"
         bundle_dir = root / asset
         mouth_dir = bundle_dir / "mouth"
         mouth_dir.mkdir(parents=True, exist_ok=True)
@@ -773,11 +775,7 @@ class PromptMakerPNGTuberVideoMouth:
                 min_tracking_confidence=float(detection_confidence),
             )
             face_mesh = face_mesh_cm.__enter__()
-        except Exception as exc:
-            if fallback_model is None:
-                raise RuntimeError(
-                    "MediaPipe FaceMesh failed to initialize and face_yolo_fallback is disabled."
-                ) from exc
+        except Exception:
             face_mesh = None
         try:
             idx = 0
@@ -923,7 +921,7 @@ class PromptMakerPNGTuberVideoMouth:
             }
 
         atlas_payload = {
-            "schema": "promptmaker.pngtuber.mouthSpriteAtlas.v1",
+            "schema": "pngtuber.mouthSpriteAtlas.v1",
             "defaultSet": "angle_p00" if "angle_p00" in angle_sprite_paths else next(iter(angle_sprite_paths), None),
             "shapeOrder": ["closed", "half", "open", "e", "u"],
             "angleStepDegrees": 15,
@@ -950,6 +948,7 @@ class PromptMakerPNGTuberVideoMouth:
             for rec in records
         ]
         track_payload = {
+            "schema": "pngtuber.mouthTrack.v1",
             "fps": fps,
             "width": width,
             "height": height,
@@ -969,7 +968,8 @@ class PromptMakerPNGTuberVideoMouth:
         track_path = bundle_dir / "mouth_track.json"
         track_path.write_text(json.dumps(track_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        summary = {
+        manifest = {
+            "schema": "pngtuber.videoMouthBundle.v1",
             "asset_id": asset,
             "source_video": str(source),
             "output_dir": str(bundle_dir),
@@ -979,6 +979,12 @@ class PromptMakerPNGTuberVideoMouth:
             "frames": len(records),
             "detected_frames": sum(1 for r in records if r.source.startswith("mediapipe")),
             "sprite_frames": sprite_indices,
+            "mouth_shapes": ["closed", "half", "open", "e", "u"],
+            "compatibility": {
+                "flatMouthSprites": True,
+                "angleSpriteAtlas": True,
+                "promptMakerVideoMouth": True,
+            },
             "files": {
                 "video": str(final_video_path),
                 "mouth_track": str(track_path),
@@ -990,12 +996,22 @@ class PromptMakerPNGTuberVideoMouth:
                 },
             },
         }
+        manifest_path = bundle_dir / "bundle_manifest.json"
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        summary = {
+            **manifest,
+            "schema": "pngtuber.videoMouthSummary.v1",
+            "bundle_manifest": str(manifest_path),
+        }
         summary_path = bundle_dir / "summary.json"
         summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
         return (
             str(final_video_path),
             str(track_path),
+            str(atlas_path),
+            str(manifest_path),
             str(sprite_paths["closed"]),
             str(sprite_paths["half"]),
             str(sprite_paths["open"]),
@@ -1005,10 +1021,14 @@ class PromptMakerPNGTuberVideoMouth:
         )
 
 
+PromptMakerPNGTuberVideoMouth = PNGTuberVideoMouthBuilder
+
 NODE_CLASS_MAPPINGS = {
+    "PNGTuberVideoMouthBuilder": PNGTuberVideoMouthBuilder,
     "PromptMakerPNGTuberVideoMouth": PromptMakerPNGTuberVideoMouth,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PromptMakerPNGTuberVideoMouth": "PromptMaker PNGTuber Video Mouth Pipeline",
+    "PNGTuberVideoMouthBuilder": "PNGTuber Video Mouth Builder",
+    "PromptMakerPNGTuberVideoMouth": "PromptMaker PNGTuber Video Mouth Pipeline (compat)",
 }

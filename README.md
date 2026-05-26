@@ -1,9 +1,20 @@
 # ComfyUI-PromptMaker-PNGTuber
 
-ComfyUI custom node for building PromptMaker `pngtuber_mode=video_mouth`
-asset bundles from a source video.
+Generic ComfyUI custom node for turning a character video into a video-mouth
+PNGTuber asset bundle.
+
+The package name keeps the PromptMaker integration target, but the pipeline is
+not PromptMaker-only. It writes a general `pngtuber.videoMouthBundle.v1`
+manifest, a frame-by-frame mouth track, flat compatibility sprites, and an
+angle-aware mouth sprite atlas.
 
 The node is local-only. It does not call OpenRouter or any remote image API.
+
+## Node
+
+- Class type: `PNGTuberVideoMouthBuilder`
+- Compatibility alias: `PromptMakerPNGTuberVideoMouth`
+- Category: `PNGTuber/Video Mouth`
 
 ## Outputs
 
@@ -11,6 +22,9 @@ For each input video, the node writes:
 
 - `loop_mouthless_h264.mp4`
 - `mouth_track.json`
+- `mouth_sprite_atlas.json`
+- `bundle_manifest.json`
+- `summary.json`
 - `mouth/closed.png`
 - `mouth/half.png`
 - `mouth/open.png`
@@ -21,12 +35,23 @@ For each input video, the node writes:
 - `mouth/angles/angle_p00/{closed,half,open,e,u}.png`
 - `mouth/angles/angle_p15/{closed,half,open,e,u}.png`
 - `mouth/angles/angle_p30/{closed,half,open,e,u}.png`
-- `mouth_sprite_atlas.json`
-- `summary.json`
 
-The flat five mouth sprites keep compatibility with PromptMaker's current
-video-mouth upload contract. The angle atlas is for smoother runtime animation
-when the player supports `mouth_sprite_atlas.json` and `frames[].spriteSet`.
+## Schemas
+
+- `bundle_manifest.json`: `pngtuber.videoMouthBundle.v1`
+- `mouth_track.json`: `pngtuber.mouthTrack.v1`
+- `mouth_sprite_atlas.json`: `pngtuber.mouthSpriteAtlas.v1`
+
+`mouth_track.json` includes:
+
+- `frames[].quad`: four-point mouth placement quad in source video coordinates
+- `frames[].mouthOpen`: normalized mouth openness estimate
+- `frames[].mouthAngleDegrees`: estimated mouth angle
+- `frames[].spriteSet`: nearest atlas set such as `angle_m15` or `angle_p00`
+
+The flat five mouth sprites keep compatibility with players that only support a
+single mouth set. The angle atlas is for smoother runtime animation when a
+player supports `mouth_sprite_atlas.json` and `frames[].spriteSet`.
 
 ## Install
 
@@ -73,10 +98,24 @@ examples/workflows/promptmaker_pngtuber_video_mouth_api.json
 Use a video file that ComfyUI can resolve from its input directory, or provide
 an absolute path in the node input.
 
-## Notes
+## PromptMaker Compatibility
 
-- `mouth_track.json` remains compatible with PromptMaker's existing validator.
-  Additional fields such as `mouthAngleDegrees` and `spriteSet` are additive.
-- `lbpcascade_animeface.xml` is included from
-  `nagadomi/lbpcascade_animeface` under the MIT license. Its license header is
-  preserved inside the XML file.
+PromptMaker's current `pngtuber_mode=video_mouth` upload contract consumes the
+flat compatibility files:
+
+- `loop_mouthless_h264.mp4`
+- `mouth_track.json`
+- `mouth/closed.png`
+- `mouth/half.png`
+- `mouth/open.png`
+- optional `mouth/e.png`
+- optional `mouth/u.png`
+
+To use the angle-aware atlas in PromptMaker, the PromptMaker player/storage
+layer must also accept and load `mouth_sprite_atlas.json` plus the
+`mouth/angles/*` PNGs.
+
+## License Notes
+
+`lbpcascade_animeface.xml` is included from `nagadomi/lbpcascade_animeface`
+under the MIT license. Its license header is preserved inside the XML file.
