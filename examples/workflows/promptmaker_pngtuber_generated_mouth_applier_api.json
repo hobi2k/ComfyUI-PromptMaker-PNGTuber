@@ -1,0 +1,63 @@
+{
+  "prompt": {
+    "1": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pngtuber_qwen_mouth_closed.png"
+      }
+    },
+    "2": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pngtuber_qwen_mouth_open.png"
+      }
+    },
+    "3": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pngtuber_qwen_mouth_half.png"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pngtuber_qwen_mouth_e.png"
+      }
+    },
+    "5": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pngtuber_qwen_mouth_u.png"
+      }
+    },
+    "10": {
+      "class_type": "PNGTuberGeneratedMouthSpriteApplier",
+      "inputs": {
+        "bundle_manifest_path": "/path/to/pngtuber_bundle/bundle_manifest.json",
+        "sprite_size": 512,
+        "overwrite_existing": true,
+        "closed_image": [
+          "1",
+          0
+        ],
+        "open_image": [
+          "2",
+          0
+        ],
+        "half_image": [
+          "3",
+          0
+        ],
+        "e_image": [
+          "4",
+          0
+        ],
+        "u_image": [
+          "5",
+          0
+        ]
+      }
+    }
+  },
+  "client_id": "promptmaker-pngtuber-generated-mouth-applier"
+}
