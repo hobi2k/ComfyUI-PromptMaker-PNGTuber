@@ -1,0 +1,20 @@
+{
+  "1": {
+    "class_type": "PromptMakerPNGTuberVideoMouth",
+    "inputs": {
+      "video_path": "input_video.mp4",
+      "output_dir": "",
+      "asset_id": "promptmaker_pngtuber_asset",
+      "max_frames": 0,
+      "frame_stride": 1,
+      "detection_confidence": 0.5,
+      "detection_mode": "anime_first",
+      "face_yolo_fallback": true,
+      "track_quad_scale": 1.8,
+      "inpaint_scale": 1.55,
+      "inpaint_radius": 5,
+      "sprite_size": 512,
+      "preserve_audio": true
+    }
+  }
+}

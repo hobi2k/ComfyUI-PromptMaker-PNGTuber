@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+output/
+*.mp4
+*.webm
+*.mov
