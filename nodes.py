@@ -25,6 +25,7 @@ MOUTH_SHAPES = ("closed", "half", "open", "e", "u")
 DEFAULT_ANGLE_RANGE_DEGREES = 45
 DEFAULT_ANGLE_STEP_DEGREES = 15
 MIN_EXTRACTED_OPEN_RANGE = 0.12
+VIDEO_EXTENSIONS = (".webm", ".mp4", ".mkv", ".gif", ".mov", ".m4v")
 
 
 @dataclass
@@ -77,6 +78,18 @@ def _resolve_path(value: str) -> Path:
         if candidate.exists():
             return candidate
     return candidates[-1]
+
+
+def _input_video_files() -> list[str]:
+    input_dir = _comfy_input_dir()
+    if not input_dir.exists():
+        return [""]
+    videos = [
+        path.name
+        for path in input_dir.iterdir()
+        if path.is_file() and path.suffix.lower() in VIDEO_EXTENSIONS
+    ]
+    return [""] + sorted(videos)
 
 
 def _safe_asset_id(value: str) -> str:
@@ -1563,6 +1576,73 @@ class PNGTuberVideoMouthBuilder:
         )
 
 
+class PNGTuberVideoUploadToMouthBundle(PNGTuberVideoMouthBuilder):
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "video": (_input_video_files(),),
+                "output_dir": ("STRING", {"default": "", "multiline": False}),
+                "asset_id": ("STRING", {"default": "", "multiline": False}),
+                "quality_preset": (["balanced", "fast_preview", "full_quality"], {"default": "balanced"}),
+                "preserve_audio": ("BOOLEAN", {"default": True}),
+            },
+            "optional": {
+                "angle_range_degrees": ("INT", {"default": 45, "min": 15, "max": 75, "step": 15}),
+                "angle_step_degrees": ("INT", {"default": 15, "min": 5, "max": 30, "step": 5}),
+                "advanced_video_path": ("STRING", {"default": "", "multiline": False}),
+            },
+        }
+
+    RETURN_TYPES = PNGTuberVideoMouthBuilder.RETURN_TYPES
+    RETURN_NAMES = PNGTuberVideoMouthBuilder.RETURN_NAMES
+    FUNCTION = "run"
+    CATEGORY = "PNGTuber/Video Mouth"
+    OUTPUT_NODE = True
+
+    def run(
+        self,
+        video: str,
+        output_dir: str,
+        asset_id: str,
+        quality_preset: str,
+        preserve_audio: bool,
+        angle_range_degrees: int = DEFAULT_ANGLE_RANGE_DEGREES,
+        angle_step_degrees: int = DEFAULT_ANGLE_STEP_DEGREES,
+        advanced_video_path: str = "",
+    ):
+        video_value = advanced_video_path.strip() or video.strip()
+        if not video_value:
+            raise RuntimeError("Upload or select a source video before running the PNGTuber bundle workflow.")
+
+        source = _resolve_path(video_value)
+        asset = asset_id.strip() or _safe_asset_id(source.stem)
+        presets = {
+            "fast_preview": {"max_frames": 240, "frame_stride": 2, "sprite_size": 384},
+            "balanced": {"max_frames": 0, "frame_stride": 1, "sprite_size": 512},
+            "full_quality": {"max_frames": 0, "frame_stride": 1, "sprite_size": 768},
+        }
+        preset = presets.get(quality_preset, presets["balanced"])
+        return super().run(
+            video_path=str(source),
+            output_dir=output_dir,
+            asset_id=asset,
+            max_frames=preset["max_frames"],
+            frame_stride=preset["frame_stride"],
+            detection_confidence=0.5,
+            detection_mode="anime_first",
+            face_yolo_fallback=True,
+            track_quad_scale=1.8,
+            inpaint_scale=1.55,
+            inpaint_radius=5,
+            sprite_size=preset["sprite_size"],
+            preserve_audio=preserve_audio,
+            angle_range_degrees=angle_range_degrees,
+            angle_step_degrees=angle_step_degrees,
+            occlusion_filter=True,
+        )
+
+
 class PNGTuberGeneratedMouthSpriteApplier:
     @classmethod
     def INPUT_TYPES(cls):
@@ -1699,12 +1779,14 @@ PromptMakerPNGTuberVideoMouth = PNGTuberVideoMouthBuilder
 
 NODE_CLASS_MAPPINGS = {
     "PNGTuberVideoMouthBuilder": PNGTuberVideoMouthBuilder,
+    "PNGTuberVideoUploadToMouthBundle": PNGTuberVideoUploadToMouthBundle,
     "PNGTuberGeneratedMouthSpriteApplier": PNGTuberGeneratedMouthSpriteApplier,
     "PromptMakerPNGTuberVideoMouth": PromptMakerPNGTuberVideoMouth,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "PNGTuberVideoMouthBuilder": "PNGTuber Video Mouth Builder",
+    "PNGTuberVideoUploadToMouthBundle": "PNGTuber Video Upload to Mouth Bundle",
     "PNGTuberGeneratedMouthSpriteApplier": "PNGTuber Generated Mouth Sprite Applier",
     "PromptMakerPNGTuberVideoMouth": "PromptMaker PNGTuber Video Mouth Pipeline (compat)",
 }

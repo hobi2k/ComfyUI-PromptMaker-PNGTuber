@@ -13,12 +13,19 @@ The node is local-only. It does not call OpenRouter or any remote image API.
 ## Nodes
 
 - Class type: `PNGTuberVideoMouthBuilder`
+- Class type: `PNGTuberVideoUploadToMouthBundle`
 - Compatibility alias: `PromptMakerPNGTuberVideoMouth`
 - Class type: `PNGTuberGeneratedMouthSpriteApplier`
 - Category: `PromptMaker/PNGTuber`
 
-`PNGTuberVideoMouthBuilder` extracts the mouthless video, track JSON, flat mouth
-sprites, and angle atlas from a source video.
+`PNGTuberVideoUploadToMouthBundle` is the preferred one-node workflow. It shows
+a ComfyUI input-folder video selector plus an `upload video` button and can also
+accept drag-and-drop video files. Run it by selecting/uploading one video and
+queueing the workflow.
+
+`PNGTuberVideoMouthBuilder` is the advanced compatibility node. It exposes the
+same extraction pipeline but keeps the lower-level `video_path` input and tuning
+controls for scripts or older workflows.
 
 `PNGTuberGeneratedMouthSpriteApplier` takes locally generated Qwen Image Edit
 outputs and replaces or fills `closed/open/half/e/u` sprites inside an existing
@@ -138,6 +145,7 @@ extraction is not kept just because the video had no usable articulation.
 UI-loadable workflows are included at:
 
 ```text
+examples/workflows/promptmaker_pngtuber_video_upload_bundle.json
 examples/workflows/promptmaker_pngtuber_video_mouth.json
 examples/workflows/promptmaker_pngtuber_generated_mouth_applier.json
 examples/workflows/promptmaker_pngtuber_qwen_mouth_generation.json
@@ -145,6 +153,13 @@ examples/workflows/promptmaker_pngtuber_qwen_mouth_generation.json
 
 These files use ComfyUI's canvas/LiteGraph format and show nodes when loaded
 from the ComfyUI workflow menu or by drag-and-drop.
+
+For a normal video-to-PNGTuber bundle run, open
+`promptmaker_pngtuber_video_upload_bundle.json`, press `upload video` on the
+single `PNGTuber Video Upload to Mouth Bundle` node, select a local video, and
+queue the prompt. The node writes the complete PromptMaker-ready bundle under
+ComfyUI output. `promptmaker_pngtuber_video_mouth.json` points at the same
+one-node upload workflow for compatibility with older documentation.
 
 API `/prompt` examples are included at:
 
@@ -167,8 +182,9 @@ input file names with the actual generated mouth images in ComfyUI's input
 folder. Red missing-input nodes still mean the workflow loaded; a blank canvas
 means an API JSON was loaded into the UI by mistake.
 
-Use a video file that ComfyUI can resolve from its input directory, or provide
-an absolute path in the node input.
+Use the upload button or drag a video onto the node. Absolute paths are still
+supported through the advanced node or the `advanced_video_path` override, but
+they are no longer the normal UI path.
 
 ## PromptMaker Compatibility
 
