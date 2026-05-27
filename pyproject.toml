@@ -1,0 +1,20 @@
+[project]
+name = "comfyui-promptmaker-pngtuber"
+description = "ComfyUI nodes for building angle-aware PNGTuber mouth sprite bundles from character videos."
+version = "0.2.0"
+license = { file = "LICENSE" }
+dependencies = [
+  "mediapipe==0.10.21",
+  "numpy==1.26.4",
+  "opencv-python>=4.9",
+  "Pillow>=10",
+  "imageio-ffmpeg>=0.4.9",
+]
+
+[project.urls]
+Repository = "https://github.com/hobi2k/ComfyUI-PromptMaker-PNGTuber"
+
+[tool.comfy]
+PublisherId = "hobi2k"
+DisplayName = "ComfyUI-PromptMaker-PNGTuber"
+Icon = ""

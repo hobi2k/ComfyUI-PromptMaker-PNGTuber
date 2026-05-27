@@ -1664,7 +1664,7 @@ class PNGTuberGeneratedMouthSpriteApplier:
     RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
     RETURN_NAMES = ("bundle_manifest", "mouth_sprite_atlas", "mouth_open", "mouth_half", "mouth_e", "mouth_u")
     FUNCTION = "run"
-    CATEGORY = "PromptMaker/PNGTuber"
+    CATEGORY = "PNGTuber/Video Mouth"
 
     def run(
         self,

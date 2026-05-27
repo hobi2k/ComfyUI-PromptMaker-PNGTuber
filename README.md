@@ -1,7 +1,7 @@
 # ComfyUI-PromptMaker-PNGTuber
 
-Generic ComfyUI custom node for turning a character video into a video-mouth
-PNGTuber asset bundle.
+ComfyUI custom nodes for turning a character video into a video-mouth PNGTuber
+asset bundle.
 
 The package name keeps the PromptMaker integration target, but the pipeline is
 not PromptMaker-only. It writes a general `pngtuber.videoMouthBundle.v1`
@@ -10,13 +10,26 @@ angle-aware mouth sprite atlas.
 
 The node is local-only. It does not call OpenRouter or any remote image API.
 
+## Quick Start
+
+1. Install the node into `ComfyUI/custom_nodes`.
+2. Install `requirements.txt` in the same Python environment used by ComfyUI.
+3. Restart ComfyUI.
+4. Load `examples/workflows/pngtuber_video_upload_bundle.json`.
+5. Press `upload video` on the single node, choose a video, and queue the
+   workflow.
+
+The default workflow writes a complete bundle under ComfyUI output:
+`loop_mouthless_h264.mp4`, `mouth_track.json`, `mouth_sprite_atlas.json`,
+`bundle_manifest.json`, flat mouth sprites, and angle-aware mouth sprites.
+
 ## Nodes
 
 - Class type: `PNGTuberVideoMouthBuilder`
 - Class type: `PNGTuberVideoUploadToMouthBundle`
 - Compatibility alias: `PromptMakerPNGTuberVideoMouth`
 - Class type: `PNGTuberGeneratedMouthSpriteApplier`
-- Category: `PromptMaker/PNGTuber`
+- Category: `PNGTuber/Video Mouth`
 
 `PNGTuberVideoUploadToMouthBundle` is the preferred one-node workflow. It shows
 a ComfyUI input-folder video selector plus an `upload video` button and can also
@@ -140,36 +153,42 @@ then connect the generated shape images to `PNGTuberGeneratedMouthSpriteApplier`
 The applier can replace all five shapes, including `closed`, so a poor forced
 extraction is not kept just because the video had no usable articulation.
 
-## Workflow Example
+## Workflow Examples
 
 UI-loadable workflows are included at:
 
 ```text
-examples/workflows/promptmaker_pngtuber_video_upload_bundle.json
-examples/workflows/promptmaker_pngtuber_video_mouth.json
-examples/workflows/promptmaker_pngtuber_generated_mouth_applier.json
-examples/workflows/promptmaker_pngtuber_qwen_mouth_generation.json
+examples/workflows/pngtuber_video_upload_bundle.json
+examples/workflows/pngtuber_generated_mouth_applier.json
+examples/workflows/pngtuber_qwen_mouth_generation.json
 ```
 
 These files use ComfyUI's canvas/LiteGraph format and show nodes when loaded
 from the ComfyUI workflow menu or by drag-and-drop.
 
 For a normal video-to-PNGTuber bundle run, open
-`promptmaker_pngtuber_video_upload_bundle.json`, press `upload video` on the
-single `PNGTuber Video Upload to Mouth Bundle` node, select a local video, and
-queue the prompt. The node writes the complete PromptMaker-ready bundle under
-ComfyUI output. `promptmaker_pngtuber_video_mouth.json` points at the same
-one-node upload workflow for compatibility with older documentation.
+`pngtuber_video_upload_bundle.json`, press `upload video` on the single
+`PNGTuber Video Upload to Mouth Bundle` node, select a local video, and queue
+the prompt.
+
+For generated-mouth post-processing, open
+`pngtuber_generated_mouth_applier.json`. It is intentionally independent:
+provide an existing `bundle_manifest.json` path and optional generated mouth
+images, then queue only that applier workflow.
+
+For closed-mouth videos, open `pngtuber_qwen_mouth_generation.json` after the
+first pass creates `mouth_generation_inputs/*`. It uses local ComfyUI Qwen Image
+Edit nodes when they are installed.
 
 API `/prompt` examples are included at:
 
 ```text
-examples/workflows/promptmaker_pngtuber_video_mouth_api.json
-examples/workflows/promptmaker_pngtuber_generated_mouth_applier_api.json
-examples/workflows/promptmaker_pngtuber_qwen_mouth_generation_api.json
+examples/workflows/pngtuber_video_upload_bundle_api.json
+examples/workflows/pngtuber_generated_mouth_applier_api.json
+examples/workflows/pngtuber_qwen_mouth_generation_api.json
 ```
 
-`promptmaker_pngtuber_qwen_mouth_generation_api.json` is the local-only
+`pngtuber_qwen_mouth_generation_api.json` is the local-only
 closed-mouth fallback pass: it loads `reference_face_mouth_crop.png`, generates
 `closed/open/half/e/u` with Qwen Image Edit, then feeds those decoded images
 directly into `PNGTuberGeneratedMouthSpriteApplier`.
