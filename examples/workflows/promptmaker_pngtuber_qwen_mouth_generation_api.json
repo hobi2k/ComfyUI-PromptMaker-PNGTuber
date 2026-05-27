@@ -1,0 +1,416 @@
+{
+  "prompt": {
+    "37": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "qwen_image_edit_2511_bf16_각도.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "38": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "type": "qwen_image",
+        "device": "default"
+      }
+    },
+    "39": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "qwen_image_vae.safetensors"
+      }
+    },
+    "40": {
+      "class_type": "LoraLoaderModelOnly",
+      "inputs": {
+        "model": [
+          "37",
+          0
+        ],
+        "lora_name": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+        "strength_model": 1.0
+      }
+    },
+    "41": {
+      "class_type": "ModelSamplingAuraFlow",
+      "inputs": {
+        "model": [
+          "40",
+          0
+        ],
+        "shift": 3.0
+      }
+    },
+    "42": {
+      "class_type": "CFGNorm",
+      "inputs": {
+        "model": [
+          "41",
+          0
+        ],
+        "strength": 1.0
+      }
+    },
+    "50": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "reference_face_mouth_crop.png"
+      }
+    },
+    "51": {
+      "class_type": "FluxKontextImageScale",
+      "inputs": {
+        "image": [
+          "50",
+          0
+        ]
+      }
+    },
+    "60": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "different character, changed face, changed eyes, extra mouth, deformed lips, blurry, low quality, cropped text, watermark"
+      }
+    },
+    "70": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1
+      }
+    },
+    "100": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "anime character mouth only edit, same character, same lighting, preserve the face and style, cute small closed relaxed mouth, clean lips, tiny neutral smile, no teeth, no open mouth"
+      }
+    },
+    "101": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "42",
+          0
+        ],
+        "positive": [
+          "100",
+          0
+        ],
+        "negative": [
+          "60",
+          0
+        ],
+        "latent_image": [
+          "70",
+          0
+        ],
+        "seed": 1779813655,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.82
+      }
+    },
+    "102": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "101",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ]
+      }
+    },
+    "110": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "anime character mouth only edit, same character, same lighting, preserve the face and style, natural open speaking mouth, clean lips, small mouth area"
+      }
+    },
+    "111": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "42",
+          0
+        ],
+        "positive": [
+          "110",
+          0
+        ],
+        "negative": [
+          "60",
+          0
+        ],
+        "latent_image": [
+          "70",
+          0
+        ],
+        "seed": 1779813201,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.85
+      }
+    },
+    "112": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "111",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ]
+      }
+    },
+    "120": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "anime character mouth only edit, same character, same lighting, preserve the face and style, small half-open speaking mouth, clean lips, subtle expression"
+      }
+    },
+    "121": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "42",
+          0
+        ],
+        "positive": [
+          "120",
+          0
+        ],
+        "negative": [
+          "60",
+          0
+        ],
+        "latent_image": [
+          "70",
+          0
+        ],
+        "seed": 1779813202,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.85
+      }
+    },
+    "122": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "121",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ]
+      }
+    },
+    "130": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "anime character mouth only edit, same character, same lighting, preserve the face and style, narrow smiling e vowel mouth, clean lips, horizontal small mouth"
+      }
+    },
+    "131": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "42",
+          0
+        ],
+        "positive": [
+          "130",
+          0
+        ],
+        "negative": [
+          "60",
+          0
+        ],
+        "latent_image": [
+          "70",
+          0
+        ],
+        "seed": 1779813203,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.85
+      }
+    },
+    "132": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "131",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ]
+      }
+    },
+    "140": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "38",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ],
+        "image1": [
+          "51",
+          0
+        ],
+        "prompt": "anime character mouth only edit, same character, same lighting, preserve the face and style, small rounded puckered u vowel mouth, cute tiny O-shaped lips, clearly open small oval mouth, no smile, clean lips"
+      }
+    },
+    "141": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "42",
+          0
+        ],
+        "positive": [
+          "140",
+          0
+        ],
+        "negative": [
+          "60",
+          0
+        ],
+        "latent_image": [
+          "70",
+          0
+        ],
+        "seed": 1779813499,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.9
+      }
+    },
+    "142": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "141",
+          0
+        ],
+        "vae": [
+          "39",
+          0
+        ]
+      }
+    },
+    "200": {
+      "class_type": "PNGTuberGeneratedMouthSpriteApplier",
+      "inputs": {
+        "bundle_manifest_path": "/path/to/pngtuber_bundle/bundle_manifest.json",
+        "sprite_size": 512,
+        "overwrite_existing": true,
+        "closed_image": [
+          "102",
+          0
+        ],
+        "open_image": [
+          "112",
+          0
+        ],
+        "half_image": [
+          "122",
+          0
+        ],
+        "e_image": [
+          "132",
+          0
+        ],
+        "u_image": [
+          "142",
+          0
+        ]
+      }
+    }
+  },
+  "client_id": "promptmaker-pngtuber-qwen-mouth-generation"
+}

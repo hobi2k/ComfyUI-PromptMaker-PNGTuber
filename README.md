@@ -140,11 +140,16 @@ An API workflow example is included at:
 ```text
 examples/workflows/promptmaker_pngtuber_video_mouth_api.json
 examples/workflows/promptmaker_pngtuber_generated_mouth_applier_api.json
+examples/workflows/promptmaker_pngtuber_qwen_mouth_generation_api.json
 ```
 
-The model-generation/applier pass is designed to be added after that builder
-workflow. Restart ComfyUI after updating the custom node so the applier class is
-visible in the node registry.
+`promptmaker_pngtuber_qwen_mouth_generation_api.json` is the local-only
+closed-mouth fallback pass: it loads `reference_face_mouth_crop.png`, generates
+`closed/open/half/e/u` with Qwen Image Edit, then feeds those decoded images
+directly into `PNGTuberGeneratedMouthSpriteApplier`.
+
+Restart ComfyUI after updating the custom node so the applier class is visible
+in the node registry.
 
 Use a video file that ComfyUI can resolve from its input directory, or provide
 an absolute path in the node input.
