@@ -135,7 +135,18 @@ extraction is not kept just because the video had no usable articulation.
 
 ## Workflow Example
 
-An API workflow example is included at:
+UI-loadable workflows are included at:
+
+```text
+examples/workflows/promptmaker_pngtuber_video_mouth.json
+examples/workflows/promptmaker_pngtuber_generated_mouth_applier.json
+examples/workflows/promptmaker_pngtuber_qwen_mouth_generation.json
+```
+
+These files use ComfyUI's canvas/LiteGraph format and show nodes when loaded
+from the ComfyUI workflow menu or by drag-and-drop.
+
+API `/prompt` examples are included at:
 
 ```text
 examples/workflows/promptmaker_pngtuber_video_mouth_api.json
@@ -150,6 +161,11 @@ directly into `PNGTuberGeneratedMouthSpriteApplier`.
 
 Restart ComfyUI after updating the custom node so the applier class is visible
 in the node registry.
+
+If a workflow shows red `LoadImage` nodes, upload or replace the placeholder
+input file names with the actual generated mouth images in ComfyUI's input
+folder. Red missing-input nodes still mean the workflow loaded; a blank canvas
+means an API JSON was loaded into the UI by mistake.
 
 Use a video file that ComfyUI can resolve from its input directory, or provide
 an absolute path in the node input.
